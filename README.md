@@ -2,6 +2,12 @@ Monads with Predicate Liftings in Coq
 ===
 モナドを用いて記述されたプログラムについての述語を自然な形で記述するための道具 *となるであろう* Monads with Predicate LiftingsのCoqにおける実装に関するものを扱います．
 
+資料
+---
++ [PPL2013で利用したポスター](poster.pdf)
++ [私の修論](http://sdk.mathink.net/master.pdf)
+
+
 解説
 ---
 現時点(05/26)では，ソースコードの公開自体が目的の一つです．
@@ -13,7 +19,7 @@ Monads with Predicate Liftings in Coq
 ---
 色々とありますので，おいおい追記していきます．
 
-+ B. Jacobs, Predicate Logic for Functors and Monads. [url](http://www.cs.ru.nl/~bart/PAPERS/predlift-indcat.pdf)
++ B. Jacobs, Predicate Logic for Functors and Monads, 2010. [URL](http://www.cs.ru.nl/~bart/PAPERS/predlift-indcat.pdf)
 
 その他
 ---
