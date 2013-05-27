@@ -4,7 +4,7 @@ Monads with Predicate Liftings in Coq
 
 資料
 ---
-+ [PPL2013で利用したポスター](poster.pdf)
++ [PPL2013で利用したポスター](http://sdk.mathink.net/poster.pdf)
 + [私の修論](http://sdk.mathink.net/master.pdf)
 
 
