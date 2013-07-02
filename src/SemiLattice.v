@@ -14,7 +14,7 @@ Module SemiLat.
   Local Open Scope sl_scope.
 
   Section SemiLattice.
-    Context {A: Type}(equiv: Equivalence A).
+    Context {A: Type}{eq: relation A}(equiv: Equivalence eq).
     
     Class SemiLattice :=
       {
@@ -70,7 +70,7 @@ Module SemiLat.
     Qed.
 
     Program Instance meet_pord_antisym
-            (sl: SemiLattice): Antisymmetric (equiv ) (meet_pord).
+            (sl: SemiLattice): Antisymmetric equiv meet_pord.
     Next Obligation.
       unfold meet_pord.
       apply Transitivity with (sl_binop y x); [| assumption].
@@ -96,7 +96,8 @@ Module SemiLat.
                    (at level 80, right associativity): sl_scope.
 
   Section Homomorphism.
-    Context {A B: Type}{equivA: Equivalence A}{equivB: Equivalence B}.
+    Context {A B: Type}{eqA: relation A}{eqB: relation B}
+            {equivA: Equivalence eqA}{equivB: Equivalence eqB}.
     
     Definition isSemiLatHom 
                (f: A -> B)

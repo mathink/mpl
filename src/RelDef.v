@@ -16,34 +16,31 @@ Module Relation.
   Class Transitive {A: Type}(R: relation A) :=
     Transitivity: forall x y z: A, R x y -> R y z -> R x z.
 
-  Class Equivalence (A: Type) :=
+  Class Equivalence {A: Type}(eq: relation A) :=
     {
-      equiv_eq: relation A;
+      equiv_eq:= eq;
       equiv_refl :> Reflexive equiv_eq;
       equiv_sym :> Symmetric equiv_eq;
       equiv_trans :> Transitive equiv_eq
     }.
-
-  Implicit Arguments equiv_eq [[A] [Equivalence]].
   Notation "A == B" := (equiv_eq A B) (at level 90, no associativity).
 
-  Class Antisymmetric {A: Type}(eq: Equivalence A)(R: relation A) :=
+  Class Antisymmetric {A: Type}{eq: relation A}(equiv: Equivalence eq)(R: relation A) :=
     Antisymmetry: forall x y: A, R x y -> R y x -> x == y.
 
 
-  Class PartialOrder {A: Type}(eq: Equivalence A) :=
+  Class PartialOrder {A: Type}{eq: relation A}(equiv: Equivalence eq) :=
     {
       pord_ord: relation A;
       pord_refl:> Reflexive pord_ord;
       pord_trans:> Transitive pord_ord;
-      pord_antisym:> Antisymmetric eq pord_ord;
+      pord_antisym:> Antisymmetric equiv pord_ord;
 
       pord_refl_eq:
         forall x y: A,
           x == y -> pord_ord x y
     }.
 
-  Implicit Arguments pord_ord [[A] [eq] [PartialOrder]].
   Notation "A <= B" := (pord_ord A B) (at level 70, no associativity).
 
   Section eq_Equivalence.
@@ -55,10 +52,7 @@ Module Relation.
     
     Program Instance eq_Transitive (A: Type): Transitive (eq (A:=A)).
     
-    Program Instance eq_Equivalence (A: Type): Equivalence A :=
-      {
-        equiv_eq := eq (A:=A)
-      }.
+    Program Instance eq_Equivalence (A: Type): Equivalence (eq (A:=A)).
   End eq_Equivalence.  
 
 
@@ -78,10 +72,7 @@ Module Relation.
       tauto.
     Qed.
     
-    Program Instance iff_Equivalence: Equivalence Prop | 100 :=
-      {
-        equiv_eq := iff
-      }.
+    Program Instance iff_Equivalence: Equivalence iff | 100.
 
   End iff_Equivalence.  
 

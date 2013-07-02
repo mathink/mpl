@@ -16,7 +16,8 @@ Module Monad.
     Reserved Notation "x >>= y" (at level 55, left associativity).
     Class Monad (T: Set -> Set): Type :=
       {
-        monad_eq {A: Set}:> Equivalence (T A);
+        monad_eq {A: Set}: relation (T A);
+        monad_eq_equiv {A: Set}:> Equivalence (monad_eq (A:=A));
 
         ret {A: Set}: A -> T A;
         

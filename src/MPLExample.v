@@ -5,10 +5,10 @@
 
  ********************************)
 
-Require Import Util RelDef MonadDef SemiLattice MPLDef.
+Require Import ssreflect Util RelDef MonadDef SemiLattice MPLDef.
+Import Prenex Implicits.
 
 Set Implicit Arguments.
-
 
 Module MPLExample.
 
@@ -16,16 +16,15 @@ Module MPLExample.
   Import SemiLat.
   Import Monad.
 
+Hint Unfold equiv_eq.
+
   Section Pred.
 
     Import SemiLat.
     Definition Pred (A: Set) := A -> Prop.
 
     Program Instance PredEquiv (X: Set)
-    : Equivalence (Pred X) :=
-      {
-        equiv_eq P Q := forall (x: X), P x <-> Q x
-      }.
+    : Equivalence (fun P Q => forall (x: X), P x <-> Q x).
     Next Obligation.
       intros P; tauto.
     Qed.
@@ -34,7 +33,6 @@ Module MPLExample.
       destruct (Hpq x).
       tauto.
     Qed.
-
     Next Obligation.
       intros P Q R Hpq Hqr x.
       generalize (Hpq x); generalize (Hqr x).
@@ -46,15 +44,20 @@ Module MPLExample.
         sl_binop P Q := fun x => P x/\Q x
       }.
     Next Obligation.
+      unfold equiv_eq.
       tauto.
     Qed.
     Next Obligation.
+      unfold equiv_eq.
       tauto.
     Qed.
     Next Obligation.
+      unfold equiv_eq.
       tauto.
     Qed.
     Next Obligation.
+      unfold equiv_eq in *.
+      intro.
       rewrite H.
       rewrite H0.
       tauto.
@@ -102,27 +105,35 @@ Module MPLExample.
 
     Program Instance IdMonad: Monad id :=
       {
-        monad_eq A := eq_Equivalence A;
+        monad_eq A := eq (A:=A);
+        monad_eq_equiv A := eq_Equivalence A;
         ret A a := a;
         bind A B f m := f m
       }.
-
+    Next Obligation.
+      unfold equiv_eq in *|-*.
+      congruence.
+    Qed.
     Existing Instance PredEquiv.
     Existing Instance PredSemiLat.
     Existing Instance PredPOrd.
 
-    Program Instance IdMPL: MPL (fun X: Set => X -> Prop) IdMonad :=
+    Program Instance IdMPL: MPL Pred IdMonad :=
       {
+        gpr_eq_equiv X := PredEquiv X;
         modal X Y f Q m := Q (f m)
       }.
     Next Obligation.
-      rewrite H.
-      apply H0.
+      unfold equiv_eq in *.
+      move => x; rewrite H.
+        by apply H0.
     Qed.
     Next Obligation.
+      unfold equiv_eq in *.
       tauto.
     Qed.
     Next Obligation.
+      unfold equiv_eq in *.
       tauto.
     Qed.
 
@@ -272,17 +283,15 @@ Module MPLExample.
     Section StateM.
       Context (S: NonEmptySet)`(monad: Monad).
 
-      Existing Instance monad_eq.
+      Existing Instance monad_eq_equiv.
       Local Open Scope type_scope.
       Definition StateM (A: Set): Set := S ->> (A*S).
 
       Definition StateM_eq (A: Set): relation (StateM A) :=
         fun m1 m2: StateM A => (forall s: S, m1 s == m2 s).
       
-      Program Instance StateM_eq_Equivalence (A: Set): Equivalence (StateM A) :=
-        {
-          equiv_eq := @StateM_eq A
-        }.
+      Program Instance StateM_eq_Equivalence (A: Set):
+        Equivalence (StateM_eq (A:=A)).
       Next Obligation.
       Proof.
         simpl.
@@ -306,7 +315,7 @@ Module MPLExample.
 
       Program Instance StateTrans: Monad StateM | 30:=
         {
-          monad_eq A := StateM_eq_Equivalence A;
+          monad_eq_equiv A := StateM_eq_Equivalence A;
           ret A a := fun s: S => ret (a, s);
           bind A B f m :=
             fun (s: S) =>
@@ -426,11 +435,8 @@ Module MPLExample.
       Import SemiLat.
       Definition SPred (S: NonEmptySet)(A: Set) := A -> S -> Prop.
 
-      Program Instance SPredEquiv S (X: Set)
-      : Equivalence (SPred S X) :=
-        {
-          equiv_eq P Q := forall (s: S)(x: X), P x s <-> Q x s
-        }.
+      Program Instance SPredEquiv (S: NonEmptySet)(X: Set)
+      : Equivalence (fun P Q => forall (s: S)(x: X), P x s <-> Q x s).
       Next Obligation.
         intros P; tauto.
       Qed.
@@ -450,16 +456,20 @@ Module MPLExample.
           sl_binop P Q := fun x s => P x s/\Q x s
         }.
       Next Obligation.
+        unfold equiv_eq in *.
         tauto.
       Qed.
       Next Obligation.
+        unfold equiv_eq in *.
         tauto.
       Qed.
       Next Obligation.
+        unfold equiv_eq in *.
         tauto.
       Qed.
       Next Obligation.
-        rewrite H.
+        unfold equiv_eq in *.
+        move => s a; rewrite H.
         rewrite H0.
         tauto.
       Qed.
@@ -512,17 +522,21 @@ Module MPLExample.
             let (y, s') := f x s in P y s'
       }.
     Next Obligation.
+      unfold equiv_eq in *.
+      move => s x.
       remember (f x s) as fxs.
       destruct fxs as [y s'].
-      rewrite <- H.
-      rewrite <- Heqfxs.
-      apply H0.
+      rewrite -H -Heqfxs.
+        by apply H0.
     Qed.
     Next Obligation.
+      unfold equiv_eq in *.
       tauto.
     Qed.
     Next Obligation.
-      remember (f x s) as fxs.
+      unfold equiv_eq in *.
+      move => s x;
+             remember (f x s) as fxs.
       destruct fxs as [y s'].
       tauto.
     Qed.
@@ -545,7 +559,8 @@ Module MPLExample.
         gpr_top X := fun _ _ => True
       }.
     Next Obligation.
-      destruct (f x s); tauto.
+      unfold equiv_eq in *.
+      move => s x; destruct (f x s); tauto.
     Qed.
 
     Program Instance SMMPLhasPordSL S : hasPord (StateMonadMPL S) :=

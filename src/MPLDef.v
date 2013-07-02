@@ -18,7 +18,8 @@ Module MPL.
     Reserved Notation "f # P" (at level 60, right associativity).
     Class MPL (gpr: Set -> Type)`(monad: Monad): Type :=
       {
-        gpr_eq {X: Set}:> Equivalence (gpr X);
+        gpr_eq {X: Set}: relation (gpr X);
+        gpr_eq_equiv {X: Set}:> Equivalence (gpr_eq (X:=X));
 
         modal {X Y: Set}(f: X ->> Y): (gpr Y) -> gpr X
                                                      where "f # P" := (modal f P);
@@ -73,9 +74,10 @@ Section MPLProperties.
   Import Monad.
   Import MPL.
 
+  Existing Instance gpr_eq_equiv.
   Class hasPord `(mpl: MPL) :=
     {
-      gpr_pord {X: Set}:> PartialOrder (gpr_eq (X:=X));
+      gpr_pord {X: Set}:> PartialOrder (gpr_eq_equiv (X:=X));
 
       modal_monotone:
         forall {X Y: Set}(f: X ->> Y)(P Q: gpr Y),
@@ -105,7 +107,7 @@ Section MPLProperties.
 
   Class hasSL `(mpl: MPL) :=
     {
-      gpr_sl (X: Set):> SemiLattice (gpr_eq (X:=X));
+      gpr_sl (X: Set):> SemiLattice (gpr_eq_equiv (X:=X));
 
       modal_semilathom:
         forall {X Y: Set}(f: X ->> Y),
