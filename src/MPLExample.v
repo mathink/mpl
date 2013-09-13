@@ -756,6 +756,18 @@ Hint Unfold equiv_eq.
         apply seq_NoDup.
       Qed.
 
+
+
+      Check list_rect.
+
+      Check (SPred nes_nat).
+      Check (SPred nes_nat bool).
+      Eval compute in (SPred nes_nat bool).
+      Check (fun (A: Set)(sp: SPred nes_nat (list A))(s: nes_nat) =>
+               
+               @list_rect  _ (fun n => sp n s)).
+      
+
     End TreeRelabeling.
 
   End MPLTR.

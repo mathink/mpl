@@ -1,7 +1,7 @@
 (********************************
 
    Monads with Predicate Liftings on Coq
-   --- Generalized Hoare Triple
+   --- Monadic Hoare Triple
 
  ********************************)
 
@@ -464,10 +464,11 @@ Section MPLProperties.
           P <= Q -> f#P <= f#Q
     }.
 
-  Definition GHT `{mpl: MPL}{hp: hasPord mpl}{X Y: Set}(P: gpr X)(f: X ->> Y)(Q: gpr Y) :=
+  (* Monadic-Hoare-Triple *)
+  Definition MHT `{mpl: MPL}{hp: hasPord mpl}{X Y: Set}(P: gpr X)(f: X ->> Y)(Q: gpr Y) :=
     P <= f#Q.
 
-  Notation "P {- f -} Q" := (GHT P f Q) (at level 70, no associativity).
+  Notation "P {- f -} Q" := (MHT P f Q) (at level 70, no associativity).
 
   Class hasTop `(mpl: MPL)(hp: hasPord mpl) :=
     {
@@ -519,7 +520,7 @@ Section MPLProperties.
 
 End MPLProperties.
 
-Notation "P {- f -} Q" := (GHT P f Q) (at level 70, no associativity).
+Notation "P {- f -} Q" := (MHT P f Q) (at level 70, no associativity).
 
 Section MPLProp.
   Import Monad.
@@ -557,24 +558,24 @@ Section MPLProp.
   Qed.
 
 
-  Lemma GHT_ret:
+  Lemma MHT_ret:
     forall {X: Set}(P: gpr X),
       P{-ret-}P.
   Proof.
     intros X P.
-    unfold GHT.
+    unfold MHT.
     apply gpr_le_subst_r with P.
     - apply modal_ident.
     - apply Reflexivity.
   Qed.
 
-  Lemma GHT_compose:
+  Lemma MHT_compose:
     forall (X Y Z: Set)
            (P: gpr X)(f: X ->> Y)(Q: gpr Y)(g: Y ->> Z)(R: gpr Z),
       P{-f-}Q -> Q{-g-}R -> P{-f|>g-}R.
   Proof.
     intros X Y Z P f Q g R Hpq Hqr.
-    unfold GHT in *.
+    unfold MHT in *.
     apply (modal_monotone f) in Hqr.
     apply Transitivity with (f#Q).
     - apply Hpq.
@@ -582,38 +583,38 @@ Section MPLProp.
       apply modal_compose.
   Qed.
 
-  Lemma GHT_result:
+  Lemma MHT_result:
     forall (X Y: Set)
            (P P': gpr X)(f: X ->> Y)(Q Q': gpr Y),
       P' <= P -> Q <= Q' ->
       P{-f-}Q -> P'{-f-}Q'.
   Proof.
     intros.
-    unfold GHT in *.
+    unfold MHT in *.
     apply Transitivity with P; [assumption |].
     apply Transitivity with (f#Q); [assumption |].
     apply modal_monotone.
     assumption.
   Qed.
 
-  Lemma GHT_result_l:
+  Lemma MHT_result_l:
     forall (X Y: Set)
            (P P': gpr X)(f: X ->> Y)(Q: gpr Y),
       P' <= P -> P{-f-}Q -> P'{-f-}Q.
   Proof.
-    do 7 intro; apply GHT_result; [assumption | apply Reflexivity].
+    do 7 intro; apply MHT_result; [assumption | apply Reflexivity].
   Qed.
 
-  Lemma GHT_result_r:
+  Lemma MHT_result_r:
     forall (X Y: Set)
            (P: gpr X)(f: X ->> Y)(Q Q': gpr Y),
       Q <= Q' -> P{-f-}Q -> P{-f-}Q'.
   Proof.
-    do 7 intro; apply GHT_result; [apply Reflexivity | assumption].
+    do 7 intro; apply MHT_result; [apply Reflexivity | assumption].
   Qed.
 
 
-  Lemma GHT_compose_inverse:
+  Lemma MHT_compose_inverse:
     forall (X Y Z: Set)
            (P: gpr X)(f: X ->> Y)(g: Y ->> Z)(R: gpr Z),
       P{-f|>g-}R ->
@@ -621,7 +622,7 @@ Section MPLProp.
         P{-f-}Q/\Q{-g-}R.
   Proof.
     do 7 intro.
-    unfold GHT.
+    unfold MHT.
     intro Hle.
     exists (g#R).
     split.
@@ -630,7 +631,7 @@ Section MPLProp.
     - apply Reflexivity.
   Qed.
 
-  Lemma GHT_subst:
+  Lemma MHT_subst:
     forall {X Y: Set}(P: gpr X)(f f': X ->> Y)(Q: gpr Y),
       P {- f -} Q ->
       (forall x, f x == f' x) ->
@@ -638,7 +639,7 @@ Section MPLProp.
   Proof.
     do 6 intro.
     intros Hht Heq; generalize dependent Hht.
-    unfold GHT in *.
+    unfold MHT in *.
     apply gpr_le_subst_r.
     apply modal_subst_f.
     apply Heq.
@@ -1271,7 +1272,7 @@ Section MPLTR.
         StateIs n {-relabel (A:=A)-} plus_size_eq n.
     Proof.
       intros A i.
-      unfold GHT, StateIs, plus_size_eq.
+      unfold MHT, StateIs, plus_size_eq.
       simpl.
       intros t s Heq; subst s.
       generalize dependent i.
@@ -1311,7 +1312,7 @@ Section MPLTR.
         StateIs n {-relabel (A:=A)-} plus_size_eq n & flat_seq_eq (A:=A) n.
     Proof.
       intros A i.
-      unfold GHT, StateIs, plus_size_eq, flat_seq_eq.
+      unfold MHT, StateIs, plus_size_eq, flat_seq_eq.
       simpl.
       intros t s Heq; subst s.
       generalize dependent i.
@@ -1369,7 +1370,7 @@ Section MPLTR.
         StateIs n {- relabel (A:=A) -}$(NoDup(.)flatten).
     Proof.
       intros A n.
-      eapply GHT_result_r; [| apply relabelNoDup_aux].
+      eapply MHT_result_r; [| apply relabelNoDup_aux].
       intros t s [_ Heq].
       unfold state_ignore.
       rewrite Heq; clear Heq.
